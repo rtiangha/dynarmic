@@ -76,7 +76,9 @@ struct Jit::Impl {
         jit_interface->is_executing = true;
         SCOPE_EXIT {
             jit_interface->is_executing = false;
-        };
+    void Initialize(u32 halt_reason_on_run, u64 traceScopeBegin, u64 traceScopeEnd) {
+        block_of_code.Initialize(halt_reason_on_run, traceScopeBegin, traceScopeEnd);
+    }
 
         const CodePtr current_codeptr = [this] {
             // RSB optimization
