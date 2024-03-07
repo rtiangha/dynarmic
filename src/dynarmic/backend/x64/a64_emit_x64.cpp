@@ -64,7 +64,7 @@ A64EmitX64::A64EmitX64(BlockOfCode& code, A64::UserConfig conf, A64::Jit* jit_in
 
 A64EmitX64::~A64EmitX64() = default;
 
-A64EmitX64::BlockDescriptor A64EmitX64::Emit(IR::Block& block) {
+A64EmitX64::BlockDescriptor A64EmitX64::Emit(IR::Block& block, u64 pc, u32 firstArmInst) {
     if (conf.very_verbose_debugging_output) {
         std::puts(IR::DumpBlock(block).c_str());
     }
@@ -90,6 +90,9 @@ A64EmitX64::BlockDescriptor A64EmitX64::Emit(IR::Block& block) {
 
     // Start emitting.
     code.align();
+    code.dq(pc);
+    code.dd(0);
+    code.dd(firstArmInst);
     const u8* const entrypoint = code.getCurr();
 
     ASSERT(block.GetCondition() == IR::Cond::AL);

@@ -219,15 +219,15 @@ bool IsUnderRosetta() {
 
 }  // anonymous namespace
 
-BlockOfCode::BlockOfCode(RunCodeCallbacks cb, JitStateInfo jsi, size_t total_code_size, std::function<void(BlockOfCode&)> rcp)
+BlockOfCode::BlockOfCode(RunCodeCallbacks&& cb, JitStateInfo jsi, size_t total_code_size, std::function<void(BlockOfCode&)>&& _rcp)
         : Xbyak::CodeGenerator(total_code_size, nullptr, &s_allocator)
         , cb(std::move(cb))
         , jsi(jsi)
         , constant_pool(*this, CONSTANT_POOL_SIZE)
-        , host_features(GetHostFeatures()) {
+        , host_features(GetHostFeatures())
+        , rcp(std::move(_rcp)) {
     EnableWriting();
     EnsureMemoryCommitted(PRELUDE_COMMIT_SIZE);
-    GenRunCode(rcp);
 }
 
 void BlockOfCode::PreludeComplete() {
@@ -305,8 +305,146 @@ void BlockOfCode::ForceReturnFromRunCode(bool mxcsr_already_exited) {
     jmp(return_from_run_code[index]);
 }
 
-void BlockOfCode::GenRunCode(std::function<void(BlockOfCode&)> rcp) {
-    Xbyak::Label return_to_caller, return_to_caller_mxcsr_already_exited;
+
+void BlockOfCode::GenHaltReasonSet(Xbyak::Label& run_code_entry) {
+    Xbyak::Label _dummy;
+    GenHaltReasonSetImpl(false, run_code_entry, _dummy);
+}
+void BlockOfCode::GenHaltReasonSet(Xbyak::Label& run_code_entry, Xbyak::Label& ret_code_entry) {
+    GenHaltReasonSetImpl(true, run_code_entry, ret_code_entry);
+}
+void BlockOfCode::GenHaltReasonSetImpl(bool isRet, Xbyak::Label& run_code_entry, Xbyak::Label& ret_code_entry) {
+    Xbyak::Label normal_code, halt_reason_set;
+    if (isRet) {
+        push(ABI_RETURN);
+        push(rbx);
+        mov(rbx, ABI_RETURN);
+    }
+    if (halt_reason_on_run) {
+        push(rsi);
+        push(rdi);
+        push(r14);
+        push(r13);
+
+        mov(esi, word[rbx - 4]);
+        mov(r14, dword[rbx - 16]);
+
+        mov(r13, trace_scope_begin);
+        cmp(r14, r13);
+        jl(normal_code, T_NEAR);
+        mov(r13, trace_scope_end);
+        cmp(r14, r13);
+        jge(normal_code, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0xfc000000);
+        cmp(edi, 0x94000000);//BL
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0xfffffc1f);
+        cmp(edi, 0xd63f0000);//BLR
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0xfffff800);
+        cmp(edi, 0xd63f0800);//BLRxxx
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0xff000010);
+        cmp(edi, 0x54000000);//B.cond
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0xff000010);
+        cmp(edi, 0x54000010);//BC.cond
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0x7f000000);
+        cmp(edi, 0x35000000);//CBNZ
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0x7f000000);
+        cmp(edi, 0x34000000);//CBZ
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0x7f000000);
+        cmp(edi, 0x37000000);//TBNZ
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0x7f000000);
+        cmp(edi, 0x36000000);//TBZ
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0xfc000000);
+        cmp(edi, 0x14000000);//B
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0xfffffc1f);
+        cmp(edi, 0xd61f0000);//BR
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0xfffff800);
+        cmp(edi, 0xd61f0800);//BRxxx
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0xfffffc1f);
+        cmp(edi, 0xd65f0000);//RET
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0xfffffbff);
+        cmp(edi, 0xd65f0bff);//RETAA, RETAB
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0xffc0001f);
+        cmp(edi, 0x5500001f);//RETAASPPC, RETABSPPC
+        jz(halt_reason_set, T_NEAR);
+
+        mov(edi, esi);
+        and_(edi, 0xfffffbe0);
+        cmp(edi, 0xd65f0be0);//RETAASPPC, RETABSPPC
+        jz(halt_reason_set, T_NEAR);
+
+        L(normal_code);
+        pop(r13);
+        pop(r14);
+        pop(rdi);
+        pop(rsi);
+        if (isRet) {
+            pop(rbx);
+            pop(ABI_RETURN);
+        }
+        jmp(run_code_entry, T_NEAR);
+
+        L(halt_reason_set);
+        pop(r13);
+        pop(r14);
+        pop(rdi);
+        pop(rsi);
+        lock();
+        or_(dword[r15 + jsi.offsetof_halt_reason], halt_reason_on_run);
+
+        if (isRet) {
+            pop(rbx);
+            pop(ABI_RETURN);
+            jmp(ret_code_entry, T_NEAR);
+        }
+    }
+}
+
+void BlockOfCode::GenRunCode() {
+    Xbyak::Label halt_reason_set, run_code_entry, return_to_caller, return_to_caller_mxcsr_already_exited;
 
     align();
     run_code = getCurr<RunCodeFuncType>();
@@ -331,6 +469,9 @@ void BlockOfCode::GenRunCode(std::function<void(BlockOfCode&)> rcp) {
     cmp(dword[r15 + jsi.offsetof_halt_reason], 0);
     jne(return_to_caller_mxcsr_already_exited, T_NEAR);
 
+    GenHaltReasonSet(run_code_entry);
+
+    L(run_code_entry);
     SwitchMxcsrOnEntry();
     jmp(rbx);
 
@@ -362,25 +503,33 @@ void BlockOfCode::GenRunCode(std::function<void(BlockOfCode&)> rcp) {
     return_from_run_code[0] = getCurr<const void*>();
 
     cmp(dword[r15 + jsi.offsetof_halt_reason], 0);
-    jne(return_to_caller);
+    jne(return_to_caller, T_NEAR);
     if (cb.enable_cycle_counting) {
         cmp(qword[rsp + ABI_SHADOW_SPACE + offsetof(StackLayout, cycles_remaining)], 0);
-        jng(return_to_caller);
+        jng(return_to_caller, T_NEAR);
     }
     cb.LookupBlock->EmitCall(*this);
+
+    Xbyak::Label next_code_entry0;
+    GenHaltReasonSet(next_code_entry0, return_to_caller);
+    L(next_code_entry0);
     jmp(ABI_RETURN);
 
     align();
     return_from_run_code[MXCSR_ALREADY_EXITED] = getCurr<const void*>();
 
     cmp(dword[r15 + jsi.offsetof_halt_reason], 0);
-    jne(return_to_caller_mxcsr_already_exited);
+    jne(return_to_caller_mxcsr_already_exited, T_NEAR);
     if (cb.enable_cycle_counting) {
         cmp(qword[rsp + ABI_SHADOW_SPACE + offsetof(StackLayout, cycles_remaining)], 0);
-        jng(return_to_caller_mxcsr_already_exited);
+        jng(return_to_caller_mxcsr_already_exited, T_NEAR);
     }
     SwitchMxcsrOnEntry();
     cb.LookupBlock->EmitCall(*this);
+
+    Xbyak::Label next_code_entry1;
+    GenHaltReasonSet(next_code_entry1, return_to_caller_mxcsr_already_exited);
+    L(next_code_entry1);
     jmp(ABI_RETURN);
 
     align();

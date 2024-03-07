@@ -272,6 +272,10 @@ Jit::Jit(UserConfig conf)
 
 Jit::~Jit() = default;
 
+void Jit::Initialize(u32 halt_reason_on_run, u64 traceScopeBegin, u64 traceScopeEnd) {
+    impl->Initialize(halt_reason_on_run, traceScopeBegin, traceScopeEnd);
+}
+
 HaltReason Jit::Run() {
     return impl->Run();
 }
