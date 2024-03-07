@@ -45,7 +45,7 @@ public:
      * Emit host machine code for a basic block with intermediate representation `block`.
      * @note block is modified.
      */
-    BlockDescriptor Emit(IR::Block& block);
+    BlockDescriptor Emit(IR::Block& block, u64 pc, u32 firstInst);
 
     void ClearCache() override;
 

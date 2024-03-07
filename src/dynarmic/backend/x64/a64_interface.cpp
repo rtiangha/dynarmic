@@ -67,6 +67,10 @@ public:
 
     ~Impl() = default;
 
+    void Initialize(u32 halt_reason_on_run, u64 traceScopeBegin, u64 traceScopeEnd) {
+        block_of_code.Initialize(halt_reason_on_run, traceScopeBegin, traceScopeEnd);
+    }
+
     HaltReason Run() {
     ASSERT(!is_executing);
     PerformRequestedCacheInvalidation(static_cast<HaltReason>(Atomic::Load(&jit_state.halt_reason)));
@@ -273,6 +277,8 @@ private:
 
         // JIT Compile
         const auto get_code = [this](u64 vaddr) { return conf.callbacks->MemoryReadCode(vaddr); };
+        u64 pc = A64::LocationDescriptor{ current_location }.PC();
+        u32 inst = get_code(pc).value();
         IR::Block ir_block = A64::Translate(A64::LocationDescriptor{current_location}, get_code,
                                             {conf.define_unpredictable_behaviour, conf.wall_clock_cntpct});
         Optimization::PolyfillPass(ir_block, polyfill_options);
@@ -290,7 +296,7 @@ private:
             Optimization::A64MergeInterpretBlocksPass(ir_block, conf.callbacks);
         }
         Optimization::VerificationPass(ir_block);
-        return emitter.Emit(ir_block).entrypoint;
+        return emitter.Emit(ir_block, pc, inst).entrypoint;
     }
 
     void PerformRequestedCacheInvalidation(HaltReason hr) {
@@ -332,6 +338,10 @@ Jit::Jit(UserConfig conf)
         : impl(std::make_unique<Jit::Impl>(this, conf)) {}
 
 Jit::~Jit() = default;
+
+void Jit::Initialize(u32 halt_reason_on_run, u64 traceScopeBegin, u64 traceScopeEnd) {
+    impl->Initialize(halt_reason_on_run, traceScopeBegin, traceScopeEnd);
+}
 
 HaltReason Jit::Run() {
     return impl->Run();
