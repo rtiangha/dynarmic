@@ -37,7 +37,7 @@ struct RunCodeCallbacks {
 
 class BlockOfCode final : public Xbyak::CodeGenerator {
 public:
-    BlockOfCode(RunCodeCallbacks cb, JitStateInfo jsi, size_t total_code_size, std::function<void(BlockOfCode&)> rcp);
+    BlockOfCode(RunCodeCallbacks&& cb, JitStateInfo jsi, size_t total_code_size, std::function<void(BlockOfCode&)>&& rcp);
     BlockOfCode(const BlockOfCode&) = delete;
 
     /// Call when external emitters have finished emitting their preludes.
@@ -178,6 +178,13 @@ public:
         return (host_features & feature) == feature;
     }
 
+    void Initialize(u32 _halt_reason_on_run, u64 _trace_scope_begin, u64 _trace_scope_end) {
+        halt_reason_on_run = _halt_reason_on_run;
+        trace_scope_begin = _trace_scope_begin;
+        trace_scope_end = _trace_scope_end;
+        GenRunCode();
+    }
+
 private:
     RunCodeCallbacks cb;
     JitStateInfo jsi;
@@ -197,9 +204,16 @@ private:
     static constexpr size_t MXCSR_ALREADY_EXITED = 1 << 0;
     static constexpr size_t FORCE_RETURN = 1 << 1;
     std::array<const void*, 4> return_from_run_code;
-    void GenRunCode(std::function<void(BlockOfCode&)> rcp);
+    void GenHaltReasonSet(Xbyak::Label& run_code_entry);
+    void GenHaltReasonSet(Xbyak::Label& run_code_entry, Xbyak::Label& ret_code_entry);
+    void GenHaltReasonSetImpl(bool isRet, Xbyak::Label& run_code_entry, Xbyak::Label& ret_code_entry);
+    void GenRunCode();
 
     const HostFeature host_features;
+    std::function<void(BlockOfCode&)> rcp;
+    u32 halt_reason_on_run;
+    u64 trace_scope_begin;
+    u64 trace_scope_end;
 };
 
 }  // namespace Dynarmic::Backend::X64
