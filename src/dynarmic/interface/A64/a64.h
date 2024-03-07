@@ -23,6 +23,8 @@ public:
     explicit Jit(UserConfig conf);
     ~Jit();
 
+    void Initialize(u32 halt_reason_on_run, u64 traceScopeBegin, u64 traceScopeEnd);
+
     /**
      * Runs the emulated CPU.
      * Cannot be recursively called.
