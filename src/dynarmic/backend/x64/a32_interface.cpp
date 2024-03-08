@@ -71,6 +71,7 @@ struct Jit::Impl {
 
     void Initialize(u32 halt_reason_on_run, u64 traceScopeBegin, u64 traceScopeEnd) {
         block_of_code.Initialize(halt_reason_on_run, traceScopeBegin, traceScopeEnd);
+        emitter.Initialize();
     }
 
     HaltReason Run() {

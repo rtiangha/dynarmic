@@ -41,6 +41,8 @@ public:
     A64EmitX64(BlockOfCode& code, A64::UserConfig conf, A64::Jit* jit_interface);
     ~A64EmitX64() override;
 
+    void Initialize();
+
     /**
      * Emit host machine code for a basic block with intermediate representation `block`.
      * @note block is modified.
