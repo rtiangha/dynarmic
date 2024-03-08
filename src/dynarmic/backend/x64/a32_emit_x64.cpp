@@ -81,9 +81,6 @@ FP::FPCR A32EmitContext::FPCR(bool fpcr_controlled) const {
 
 A32EmitX64::A32EmitX64(BlockOfCode& code, A32::UserConfig conf, A32::Jit* jit_interface)
         : EmitX64(code), conf(std::move(conf)), jit_interface(jit_interface) {
-    GenFastmemFallbacks();
-    GenTerminalHandlers();
-    code.PreludeComplete();
     ClearFastDispatchTable();
 
     exception_handler.SetFastmemCallback([this](u64 rip_) {
@@ -92,6 +89,12 @@ A32EmitX64::A32EmitX64(BlockOfCode& code, A32::UserConfig conf, A32::Jit* jit_in
 }
 
 A32EmitX64::~A32EmitX64() = default;
+
+void A32EmitX64::Initialize() {
+    GenFastmemFallbacks();
+    GenTerminalHandlers();
+    code.PreludeComplete();
+}
 
 A32EmitX64::BlockDescriptor A32EmitX64::Emit(IR::Block& block) {
     if (conf.very_verbose_debugging_output) {

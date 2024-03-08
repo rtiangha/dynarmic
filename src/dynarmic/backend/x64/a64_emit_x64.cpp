@@ -51,10 +51,6 @@ FP::FPCR A64EmitContext::FPCR(bool fpcr_controlled) const {
 
 A64EmitX64::A64EmitX64(BlockOfCode& code, A64::UserConfig conf, A64::Jit* jit_interface)
         : EmitX64(code), conf(conf), jit_interface{jit_interface} {
-    GenMemory128Accessors();
-    GenFastmemFallbacks();
-    GenTerminalHandlers();
-    code.PreludeComplete();
     ClearFastDispatchTable();
 
     exception_handler.SetFastmemCallback([this](u64 rip_) {
@@ -63,6 +59,13 @@ A64EmitX64::A64EmitX64(BlockOfCode& code, A64::UserConfig conf, A64::Jit* jit_in
 }
 
 A64EmitX64::~A64EmitX64() = default;
+
+void A64EmitX64::Initialize() {
+    GenMemory128Accessors();
+    GenFastmemFallbacks();
+    GenTerminalHandlers();
+    code.PreludeComplete();
+}
 
 A64EmitX64::BlockDescriptor A64EmitX64::Emit(IR::Block& block, u64 pc, u32 firstArmInst) {
     if (conf.very_verbose_debugging_output) {
@@ -194,7 +197,7 @@ void A64EmitX64::GenTerminalHandlers() {
     code.mov(dword[r15 + offsetof(A64JitState, rsb_ptr)], eax);
     code.cmp(rbx, qword[r15 + offsetof(A64JitState, rsb_location_descriptors) + rax * sizeof(u64)]);
     if (conf.HasOptimization(OptimizationFlag::FastDispatch)) {
-        code.jne(rsb_cache_miss);
+        code.jne(rsb_cache_miss, Xbyak::CodeGenerator::T_NEAR);
     } else {
         code.jne(code.GetReturnFromRunCodeAddress());
     }
