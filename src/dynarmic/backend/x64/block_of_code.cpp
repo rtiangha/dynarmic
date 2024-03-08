@@ -315,12 +315,12 @@ void BlockOfCode::GenHaltReasonSet(Xbyak::Label& run_code_entry, Xbyak::Label& r
 }
 void BlockOfCode::GenHaltReasonSetImpl(bool isRet, Xbyak::Label& run_code_entry, Xbyak::Label& ret_code_entry) {
     Xbyak::Label normal_code, halt_reason_set;
-    if (isRet) {
-        push(ABI_RETURN);
-        push(rbx);
-        mov(rbx, ABI_RETURN);
-    }
     if (halt_reason_on_run) {
+        if (isRet) {
+            push(ABI_RETURN);
+            push(rbx);
+            mov(rbx, ABI_RETURN);
+        }
         push(rsi);
         push(rdi);
         push(r14);

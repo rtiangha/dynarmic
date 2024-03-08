@@ -197,7 +197,7 @@ void A64EmitX64::GenTerminalHandlers() {
     code.mov(dword[r15 + offsetof(A64JitState, rsb_ptr)], eax);
     code.cmp(rbx, qword[r15 + offsetof(A64JitState, rsb_location_descriptors) + rax * sizeof(u64)]);
     if (conf.HasOptimization(OptimizationFlag::FastDispatch)) {
-        code.jne(rsb_cache_miss, Xbyak::CodeGenerator::T_NEAR);
+        code.jne(rsb_cache_miss);
     } else {
         code.jne(code.GetReturnFromRunCodeAddress());
     }
