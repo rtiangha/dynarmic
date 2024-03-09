@@ -185,7 +185,7 @@ endif()
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-install(TARGETS dynarmic EXPORT dynarmicTargets)
+install(TARGETS dynarmic robin_map EXPORT dynarmicTargets)
 install(EXPORT dynarmicTargets
     NAMESPACE dynarmic::
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/dynarmic"
