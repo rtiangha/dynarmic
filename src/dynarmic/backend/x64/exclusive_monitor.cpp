@@ -30,17 +30,17 @@ bool ExclusiveMonitor::CheckAndClear(size_t processor_id, VAddr address) {
     const VAddr masked_address = address & RESERVATION_GRANULE_MASK;
 
     Lock();
-    if (exclusive_addresses[processor_id] != masked_address) {
-        Unlock();
-        return false;
-    }
-
-    for (VAddr& other_address : exclusive_addresses) {
-        if (other_address == masked_address) {
-            other_address = INVALID_EXCLUSIVE_ADDRESS;
+    bool result = false;
+    if (exclusive_addresses[processor_id] == masked_address) {
+        for (VAddr& other_address : exclusive_addresses) {
+            if (other_address == masked_address) {
+                other_address = INVALID_EXCLUSIVE_ADDRESS;
+            }
         }
+        result = true;
     }
-    return true;
+    Unlock();
+    return result;
 }
 
 void ExclusiveMonitor::Clear() {

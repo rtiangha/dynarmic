@@ -27,13 +27,14 @@ tsl::robin_set<IR::LocationDescriptor> BlockRangeInformation<ProgramCounterType>
     tsl::robin_set<IR::LocationDescriptor> erase_locations;
     for (auto invalidate_interval : ranges) {
         auto pair = block_ranges.equal_range(invalidate_interval);
-        for (auto it = pair.first; it != pair.second; ++it) {
-            for (const auto& descriptor : it->second) {
+        while (pair.first != pair.second) {
+            for (const auto& descriptor : pair.first->second) {
                 erase_locations.insert(descriptor);
             }
+            // Remove the range that is to be erased
+            block_ranges.erase(pair.first++);
         }
     }
-    // TODO: EFFICIENCY: Remove ranges that are to be erased.
     return erase_locations;
 }
 

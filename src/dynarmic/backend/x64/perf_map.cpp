@@ -24,9 +24,9 @@ namespace Dynarmic::Backend::X64 {
 namespace {
 std::mutex mutex;
 std::FILE* file = nullptr;
+const char* perf_dir = std::getenv("PERF_BUILDID_DIR");
 
 void OpenFile() {
-    const char* perf_dir = std::getenv("PERF_BUILDID_DIR");
     if (!perf_dir) {
         file = nullptr;
         return;
@@ -51,8 +51,6 @@ void PerfMapRegister(const void* start, const void* end, std::string_view friend
         return;
     }
 
-    std::lock_guard guard{mutex};
-
     if (!file) {
         OpenFile();
         if (!file) {
@@ -60,6 +58,7 @@ void PerfMapRegister(const void* start, const void* end, std::string_view friend
         }
     }
 
+    std::lock_guard guard{mutex};
     const std::string line = fmt::format("{:016x} {:016x} {:s}\n", reinterpret_cast<u64>(start), reinterpret_cast<u64>(end) - reinterpret_cast<u64>(start), friendly_name);
     std::fwrite(line.data(), sizeof *line.data(), line.size(), file);
 }

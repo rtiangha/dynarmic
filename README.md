@@ -1,7 +1,11 @@
+<<<<<<< HEAD
 Dynarmic
 ========
 
 [![Github Actions Build Status (x86-64)](https://github.com/yuzu-mirror/dynarmic/actions/workflows/x86-64.yml/badge.svg)](https://github.com/yuzu-mirror/dynarmic/actions/workflows/x86-64.yml) [![Github Actions Build Status (AArch64)](https://github.com/yuzu-mirror/dynarmic/actions/workflows/aarch64.yml/badge.svg)](https://github.com/yuzu-mirror/dynarmic/actions/workflows/AArch64.yml)
+=======
+Unofficial dynarmic fork trying to improve performance
+>>>>>>> miguel/main
 
 A dynamic recompiler for ARM.
 
