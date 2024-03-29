@@ -383,10 +383,6 @@ void A32EmitX64::EmitA32GetCpsr(A32EmitContext& ctx, IR::Inst* inst) {
     const Xbyak::Reg32 tmp2 = ctx.reg_alloc.ScratchGpr().cvt32();
 
     if (code.HasHostFeature(HostFeature::FastBMI2)) {
-        // Here we observe that cpsr_et and cpsr_ge are right next to each other in memory,
-        // so we load them both at the same time with one 64-bit read. This allows us to
-        // extract all of their bits together at once with one pext.
-        static_assert(offsetof(A32JitState, upper_location_descriptor) + 4 == offsetof(A32JitState, cpsr_ge));
         code.mov(result.cvt64(), qword[r15 + offsetof(A32JitState, upper_location_descriptor)]);
         code.mov(tmp.cvt64(), 0x80808080'00000003ull);
         code.pext(result.cvt64(), result.cvt64(), tmp.cvt64());
@@ -428,7 +424,6 @@ void A32EmitX64::EmitA32GetCpsr(A32EmitContext& ctx, IR::Inst* inst) {
 
 void A32EmitX64::EmitA32SetCpsr(A32EmitContext& ctx, IR::Inst* inst) {
     auto args = ctx.reg_alloc.GetArgumentInfo(inst);
-
     const Xbyak::Reg32 cpsr = ctx.reg_alloc.UseScratchGpr(args[0]).cvt32();
     const Xbyak::Reg32 tmp = ctx.reg_alloc.ScratchGpr().cvt32();
     const Xbyak::Reg32 tmp2 = ctx.reg_alloc.ScratchGpr().cvt32();
@@ -526,9 +521,9 @@ void A32EmitX64::EmitA32SetCpsrNZCVRaw(A32EmitContext& ctx, IR::Inst* inst) {
 
 void A32EmitX64::EmitA32SetCpsrNZCVQ(A32EmitContext& ctx, IR::Inst* inst) {
     auto args = ctx.reg_alloc.GetArgumentInfo(inst);
-    if (args[0].IsImmediate()) {
-        const u32 imm = args[0].GetImmediateU32();
+    const u32 imm = args[0].GetImmediateU32();
 
+    if (args[0].IsImmediate()) {
         code.mov(dword[r15 + offsetof(A32JitState, cpsr_nzcv)], NZCV::ToX64(imm));
         code.mov(code.byte[r15 + offsetof(A32JitState, cpsr_q)], u8((imm & 0x08000000) != 0 ? 1 : 0));
     } else if (code.HasHostFeature(HostFeature::FastBMI2)) {
@@ -641,8 +636,8 @@ void A32EmitX64::EmitA32SetGEFlags(A32EmitContext& ctx, IR::Inst* inst) {
 
 void A32EmitX64::EmitA32SetGEFlagsCompressed(A32EmitContext& ctx, IR::Inst* inst) {
     auto args = ctx.reg_alloc.GetArgumentInfo(inst);
+    const u32 imm = args[0].GetImmediateU32();
     if (args[0].IsImmediate()) {
-        const u32 imm = args[0].GetImmediateU32();
         u32 ge = 0;
         ge |= mcl::bit::get_bit<19>(imm) ? 0xFF000000 : 0;
         ge |= mcl::bit::get_bit<18>(imm) ? 0x00FF0000 : 0;
@@ -692,18 +687,7 @@ void A32EmitX64::EmitA32InstructionSynchronizationBarrier(A32EmitContext& ctx, I
 void A32EmitX64::EmitA32BXWritePC(A32EmitContext& ctx, IR::Inst* inst) {
     auto args = ctx.reg_alloc.GetArgumentInfo(inst);
     auto& arg = args[0];
-
     const u32 upper_without_t = (ctx.EndLocation().SetSingleStepping(false).UniqueHash() >> 32) & 0xFFFFFFFE;
-
-    // Pseudocode:
-    // if (new_pc & 1) {
-    //    new_pc &= 0xFFFFFFFE;
-    //    cpsr.T = true;
-    // } else {
-    //    new_pc &= 0xFFFFFFFC;
-    //    cpsr.T = false;
-    // }
-    // We rely on the fact we disallow EFlag from changing within a block.
 
     if (arg.IsImmediate()) {
         const u32 new_pc = arg.GetImmediateU32();
@@ -856,6 +840,7 @@ static void CallCoprocCallback(BlockOfCode& code, RegAlloc& reg_alloc, A32::Copr
 }
 
 void A32EmitX64::EmitA32CoprocInternalOperation(A32EmitContext& ctx, IR::Inst* inst) {
+    auto args = ctx.reg_alloc.GetArgumentInfo(inst);
     const auto coproc_info = inst->GetArg(0).GetCoprocInfo();
     const size_t coproc_num = coproc_info[0];
     const bool two = coproc_info[1] != 0;
@@ -897,7 +882,6 @@ void A32EmitX64::EmitA32CoprocSendOneWord(A32EmitContext& ctx, IR::Inst* inst) {
     }
 
     const auto action = coproc->CompileSendOneWord(two, opc1, CRn, CRm, opc2);
-
     if (std::holds_alternative<std::monostate>(action)) {
         EmitCoprocessorException();
         return;
@@ -923,7 +907,6 @@ void A32EmitX64::EmitA32CoprocSendOneWord(A32EmitContext& ctx, IR::Inst* inst) {
 
 void A32EmitX64::EmitA32CoprocSendTwoWords(A32EmitContext& ctx, IR::Inst* inst) {
     auto args = ctx.reg_alloc.GetArgumentInfo(inst);
-
     const auto coproc_info = inst->GetArg(0).GetCoprocInfo();
     const size_t coproc_num = coproc_info[0];
     const bool two = coproc_info[1] != 0;
@@ -937,7 +920,6 @@ void A32EmitX64::EmitA32CoprocSendTwoWords(A32EmitContext& ctx, IR::Inst* inst) 
     }
 
     const auto action = coproc->CompileSendTwoWords(two, opc, CRm);
-
     if (std::holds_alternative<std::monostate>(action)) {
         EmitCoprocessorException();
         return;
@@ -965,8 +947,8 @@ void A32EmitX64::EmitA32CoprocSendTwoWords(A32EmitContext& ctx, IR::Inst* inst) 
 }
 
 void A32EmitX64::EmitA32CoprocGetOneWord(A32EmitContext& ctx, IR::Inst* inst) {
+    auto args = ctx.reg_alloc.GetArgumentInfo(inst);
     const auto coproc_info = inst->GetArg(0).GetCoprocInfo();
-
     const size_t coproc_num = coproc_info[0];
     const bool two = coproc_info[1] != 0;
     const auto opc1 = static_cast<unsigned>(coproc_info[2]);
@@ -981,7 +963,6 @@ void A32EmitX64::EmitA32CoprocGetOneWord(A32EmitContext& ctx, IR::Inst* inst) {
     }
 
     const auto action = coproc->CompileGetOneWord(two, opc1, CRn, CRm, opc2);
-
     if (std::holds_alternative<std::monostate>(action)) {
         EmitCoprocessorException();
         return;
@@ -1008,6 +989,7 @@ void A32EmitX64::EmitA32CoprocGetOneWord(A32EmitContext& ctx, IR::Inst* inst) {
 }
 
 void A32EmitX64::EmitA32CoprocGetTwoWords(A32EmitContext& ctx, IR::Inst* inst) {
+    auto args = ctx.reg_alloc.GetArgumentInfo(inst);
     const auto coproc_info = inst->GetArg(0).GetCoprocInfo();
     const size_t coproc_num = coproc_info[0];
     const bool two = coproc_info[1] != 0;
@@ -1021,7 +1003,6 @@ void A32EmitX64::EmitA32CoprocGetTwoWords(A32EmitContext& ctx, IR::Inst* inst) {
     }
 
     auto action = coproc->CompileGetTwoWords(two, opc, CRm);
-
     if (std::holds_alternative<std::monostate>(action)) {
         EmitCoprocessorException();
         return;
@@ -1157,17 +1138,21 @@ void A32EmitX64::EmitSetUpperLocationDescriptor(IR::LocationDescriptor new_locat
 void A32EmitX64::EmitTerminalImpl(IR::Term::LinkBlock terminal, IR::LocationDescriptor initial_location, bool is_single_step) {
     EmitSetUpperLocationDescriptor(terminal.next, initial_location);
 
+    auto terminal_next_PC = A32::LocationDescriptor{terminal.next}.PC();
+
     if (!conf.HasOptimization(OptimizationFlag::BlockLinking) || is_single_step) {
-        code.mov(MJitStateReg(A32::Reg::PC), A32::LocationDescriptor{terminal.next}.PC());
+        code.mov(MJitStateReg(A32::Reg::PC), terminal_next_PC);
         code.ReturnFromRunCode();
         return;
     }
+
+    auto next_bb = GetBasicBlock(terminal.next);
 
     if (conf.enable_cycle_counting) {
         code.cmp(qword[rsp + ABI_SHADOW_SPACE + offsetof(StackLayout, cycles_remaining)], 0);
 
         patch_information[terminal.next].jg.push_back(code.getCurr());
-        if (const auto next_bb = GetBasicBlock(terminal.next)) {
+        if (next_bb) {
             EmitPatchJg(terminal.next, next_bb->entrypoint);
         } else {
             EmitPatchJg(terminal.next);
@@ -1176,14 +1161,14 @@ void A32EmitX64::EmitTerminalImpl(IR::Term::LinkBlock terminal, IR::LocationDesc
         code.cmp(dword[r15 + offsetof(A32JitState, halt_reason)], 0);
 
         patch_information[terminal.next].jz.push_back(code.getCurr());
-        if (const auto next_bb = GetBasicBlock(terminal.next)) {
+        if (next_bb) {
             EmitPatchJz(terminal.next, next_bb->entrypoint);
         } else {
             EmitPatchJz(terminal.next);
         }
     }
 
-    code.mov(MJitStateReg(A32::Reg::PC), A32::LocationDescriptor{terminal.next}.PC());
+    code.mov(MJitStateReg(A32::Reg::PC), terminal_next_PC);
     PushRSBHelper(rax, rbx, terminal.next);
     code.ForceReturnFromRunCode();
 }
