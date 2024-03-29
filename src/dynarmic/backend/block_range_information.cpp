@@ -25,12 +25,16 @@ void BlockRangeInformation<ProgramCounterType>::ClearCache() {
 template<typename ProgramCounterType>
 tsl::robin_set<IR::LocationDescriptor> BlockRangeInformation<ProgramCounterType>::InvalidateRanges(const boost::icl::interval_set<ProgramCounterType>& ranges) {
     tsl::robin_set<IR::LocationDescriptor> erase_locations;
+    erase_locations.reserve(ranges.size());  // Reserve space for erase_locations
+
     for (auto invalidate_interval : ranges) {
         auto pair = block_ranges.equal_range(invalidate_interval);
-        for (auto it = pair.first; it != pair.second; ++it) {
-            for (const auto& descriptor : it->second) {
-                erase_locations.insert(descriptor);
+        while (pair.first != pair.second) {
+            for (const auto& descriptor : pair.first->second) {
+                erase_locations.emplace(descriptor);  // Use emplace instead of insert
             }
+            // Remove the range that is to be erased
+            block_ranges.erase(pair.first++);  // Keep post-increment operator
         }
     }
     // TODO: EFFICIENCY: Remove ranges that are to be erased.
