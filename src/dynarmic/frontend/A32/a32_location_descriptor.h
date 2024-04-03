@@ -7,7 +7,6 @@
 
 #include <functional>
 #include <string>
-#include <tuple>
 
 #include <fmt/format.h>
 #include <mcl/stdint.hpp>
