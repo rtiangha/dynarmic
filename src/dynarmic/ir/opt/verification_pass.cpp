@@ -2,12 +2,11 @@
  * Copyright (c) 2016 MerryMage
  * SPDX-License-Identifier: 0BSD
  */
- 
+
 #include <unordered_map>
 
 #include <mcl/assert.hpp>
 #include <mcl/stdint.hpp>
-#include "custom_puts.hpp"
 
 #include "dynarmic/ir/basic_block.h"
 #include "dynarmic/ir/microinstruction.h"
@@ -17,13 +16,21 @@
 
 namespace Dynarmic::Optimization {
 
+int custom_puts(const char* str) {
+    int len = 0;
+    while (str[len] != '\0') {
+        len++;
+    }
+    return write(STDOUT_FILENO, str, len) == len ? len : -1;
+}
+
 void VerificationPass(const IR::Block& block) {
     for (const auto& inst : block) {
         for (size_t i = 0; i < inst.NumArgs(); i++) {
             const IR::Type t1 = inst.GetArg(i).GetType();
             const IR::Type t2 = IR::GetArgTypeOf(inst.GetOpcode(), i);
             if (!IR::AreTypesCompatible(t1, t2)) {
-                custom_puts(IR::DumpBlock(block).c_str());
+                std::puts(IR::DumpBlock(block).c_str());
                 ASSERT_FALSE("above block failed validation");
             }
         }
