@@ -12,7 +12,7 @@
 	url = https://github.com/rtiangha/mcl
 [submodule "externals/oaknut"]
 	path = externals/oaknut
-	url = https://github.com/yuzu-mirror/oaknut
+	url = https://github.com/rtiangha/oaknut
 [submodule "externals/robin-map"]
 	path = externals/robin-map
 	url = https://github.com/Tessil/robin-map
