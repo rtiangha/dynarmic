@@ -16,6 +16,7 @@
 #include "dynarmic/backend/arm64/a32_jitstate.h"
 #include "dynarmic/common/atomic.h"
 #include "dynarmic/interface/A32/a32.h"
+#include "dynarmic/interface/A32/config.h"
 
 namespace Dynarmic::A32 {
 
