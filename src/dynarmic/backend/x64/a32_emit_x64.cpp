@@ -382,6 +382,9 @@ void A32EmitX64::EmitA32GetCpsr(A32EmitContext& ctx, IR::Inst* inst) {
     const Xbyak::Reg32 tmp = ctx.reg_alloc.ScratchGpr().cvt32();
     const Xbyak::Reg32 tmp2 = ctx.reg_alloc.ScratchGpr().cvt32();
 
+        // Here we observe that cpsr_et and cpsr_ge are right next to each other in memory,
+        // so we load them both at the same time with one 64-bit read. This allows us to
+        // extract all of their bits together at once with one pext.
     if (code.HasHostFeature(HostFeature::FastBMI2)) {
         code.mov(result.cvt64(), qword[r15 + offsetof(A32JitState, upper_location_descriptor)]);
         code.mov(tmp.cvt64(), 0x80808080'00000003ull);
@@ -688,6 +691,16 @@ void A32EmitX64::EmitA32BXWritePC(A32EmitContext& ctx, IR::Inst* inst) {
     auto args = ctx.reg_alloc.GetArgumentInfo(inst);
     auto& arg = args[0];
     const u32 upper_without_t = (ctx.EndLocation().SetSingleStepping(false).UniqueHash() >> 32) & 0xFFFFFFFE;
+
+    // Pseudocode:
+    // if (new_pc & 1) {
+    //    new_pc &= 0xFFFFFFFE;
+    //    cpsr.T = true;
+    // } else {
+    //    new_pc &= 0xFFFFFFFC;
+    //    cpsr.T = false;
+    // }
+    // We rely on the fact we disallow EFlag from changing within a block.
 
     if (arg.IsImmediate()) {
         const u32 new_pc = arg.GetImmediateU32();
