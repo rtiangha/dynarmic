@@ -9,6 +9,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include <mcl/container/intrusive_list.hpp>
 #include <mcl/stdint.hpp>
@@ -138,6 +139,8 @@ public:
     size_t& CycleCount();
     /// Gets an immutable reference to the cycle count for this basic block.
     const size_t& CycleCount() const;
+
+    void Serialize(std::vector<uint16_t>&) const;
 
 private:
     /// Description of the starting location of this block
