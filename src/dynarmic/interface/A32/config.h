@@ -235,8 +235,11 @@ struct UserConfig {
     bool always_little_endian = false;
 
     // Minimum size is about 8MiB. Maximum size is about 128MiB (arm64 host) or 2GiB (x64 host).
-    // Maximum size is limited by the maximum length of a x86_64 / arm64 jump.
+    /// Maximum size is limited by the maximum length of a x86_64 / arm64 jump.
     size_t code_cache_size = 128 * 1024 * 1024;  // bytes
+
+    /// IR cache location, disabled if empty. Must be directory that exists.
+    std::string ir_cache_path;
 
     /// Internal use only
     bool very_verbose_debugging_output = false;

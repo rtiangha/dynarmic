@@ -12,7 +12,6 @@
 #include <mcl/assert.hpp>
 #include <mcl/stdint.hpp>
 
-#include "dynarmic/ir/basic_block.h"
 #include "dynarmic/ir/type.h"
 
 namespace Dynarmic::A32 {

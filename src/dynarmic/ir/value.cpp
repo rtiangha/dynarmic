@@ -7,6 +7,7 @@
 
 #include <mcl/assert.hpp>
 
+#include "dynarmic/ir/basic_block.h"
 #include "dynarmic/ir/microinstruction.h"
 #include "dynarmic/ir/opcodes.h"
 #include "dynarmic/ir/type.h"
