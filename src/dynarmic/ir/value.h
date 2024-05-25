@@ -7,10 +7,12 @@
 
 #include <array>
 #include <type_traits>
+#include <vector>
 
 #include <mcl/assert.hpp>
 #include <mcl/stdint.hpp>
 
+#include "dynarmic/ir/basic_block.h"
 #include "dynarmic/ir/type.h"
 
 namespace Dynarmic::A32 {
@@ -77,6 +79,7 @@ public:
     AccType GetAccType() const;
 
     void Serialize(const Block&, std::vector<uint16_t>&) const;
+    static Value Deserialize(const std::vector<Inst*>&, std::vector<uint16_t>::iterator&);
 
     /**
      * Retrieves the immediate of a Value instance as a signed 64-bit value.
