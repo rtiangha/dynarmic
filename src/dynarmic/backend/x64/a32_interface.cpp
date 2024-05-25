@@ -6,6 +6,9 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <fstream>
+#include <filesystem>
+#include <cstring>
 
 #include <boost/icl/interval_set.hpp>
 #include <fmt/format.h>
@@ -213,6 +216,28 @@ private:
         }
         block_of_code.EnsureMemoryCommitted(MINIMUM_REMAINING_CODESIZE);
 
+        // Get cache path
+        const auto cache_path = std::filesystem::path(conf.ir_cache_path) / (std::to_string(descriptor.Value())+".ir");
+
+        // Load from disk cache
+        if (!conf.ir_cache_path.empty()) {
+            std::ifstream cache_file(cache_path, std::ios::binary);
+            if (cache_file) {
+                // Read entire file
+                std::vector<uint16_t> data;
+                while (cache_file.read(reinterpret_cast<char*>(&data.emplace_back(0)), sizeof(data[0])));
+                data.pop_back();
+                cache_file.close();
+                // Deserialize file
+                IR::Block ir_block(A32::LocationDescriptor{descriptor});
+                auto it = data.begin();
+                ir_block.Deserialize(it);
+                ASSERT(!(it > data.end()));
+                ASSERT(!(it < data.end()));
+                return emitter.Emit(ir_block);
+            }
+        }
+
         IR::Block ir_block = A32::Translate(A32::LocationDescriptor{descriptor}, conf.callbacks, {conf.arch_version, conf.define_unpredictable_behaviour, conf.hook_hint_instructions});
         Optimization::PolyfillPass(ir_block, polyfill_options);
         Optimization::NamingPass(ir_block);
@@ -227,6 +252,16 @@ private:
         }
         Optimization::IdentityRemovalPass(ir_block);
         Optimization::VerificationPass(ir_block);
+
+        // Store to disk cache if non-empty
+        if (!conf.ir_cache_path.empty() && !ir_block.empty()) {
+            std::ofstream cache_file(cache_path, std::ios::binary);
+            ASSERT_MSG(cache_file, "Failed to write cache file");
+            std::vector<uint16_t> data;
+            ir_block.Serialize(data);
+            cache_file.write(reinterpret_cast<const char*>(data.data()), data.size()*sizeof(data[0]));
+        }
+
         return emitter.Emit(ir_block);
     }
 
