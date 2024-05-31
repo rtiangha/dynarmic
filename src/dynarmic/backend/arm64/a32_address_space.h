@@ -17,7 +17,7 @@ class A32AddressSpace final : public AddressSpace {
 public:
     explicit A32AddressSpace(const A32::UserConfig& conf);
 
-    IR::Block GenerateIR(IR::LocationDescriptor) const override;
+    IR::Block GenerateIR(IR::LocationDescriptor, u64& pc, u32& inst) const override;
 
     void InvalidateCacheRanges(const boost::icl::interval_set<u32>& ranges);
 

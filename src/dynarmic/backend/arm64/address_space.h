@@ -27,7 +27,7 @@ public:
     explicit AddressSpace(size_t code_cache_size);
     virtual ~AddressSpace();
 
-    virtual IR::Block GenerateIR(IR::LocationDescriptor) const = 0;
+    virtual IR::Block GenerateIR(IR::LocationDescriptor, u64& pc, u32& inst) const = 0;
 
     CodePtr Get(IR::LocationDescriptor descriptor);
 
@@ -62,7 +62,7 @@ protected:
     }
 
     size_t GetRemainingSize();
-    EmittedBlockInfo Emit(IR::Block ir_block);
+    EmittedBlockInfo Emit(IR::Block ir_block, u64 pc, u32 firstInst);
     void Link(EmittedBlockInfo& block);
     void LinkBlockLinks(const CodePtr entry_point, const CodePtr target_ptr, const std::vector<BlockRelocation>& block_relocations_list);
     void RelinkForDescriptor(IR::LocationDescriptor target_descriptor, CodePtr target_ptr);
