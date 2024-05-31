@@ -202,10 +202,10 @@ EmittedBlockInfo EmitArm64(oaknut::CodeGenerator& code, IR::Block block, const E
     RegAlloc reg_alloc{code, fpsr_manager, GPR_ORDER, FPR_ORDER};
     EmitContext ctx{block, reg_alloc, conf, ebi, fpsr_manager, fastmem_manager, {}};
 
-    code.align();
-    code.dq(pc);
-    code.dd(0);
-    code.dd(firstArmInst);
+    code.align(16);
+    code.dx(pc);
+    code.dw(0);
+    code.dw(firstInst);
     ebi.entry_point = code.xptr<CodePtr>();
 
     if (ctx.block.GetCondition() == IR::Cond::AL) {

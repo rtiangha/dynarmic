@@ -158,7 +158,6 @@ static void* EmitExclusiveWriteCallTrampoline(oaknut::CodeGenerator& code, const
 A32AddressSpace::A32AddressSpace(const A32::UserConfig& conf)
         : AddressSpace(conf.code_cache_size)
         , conf(conf) {
-    EmitPrelude();
 }
 
 IR::Block A32AddressSpace::GenerateIR(IR::LocationDescriptor descriptor, u64& pc, u32& inst) const {
@@ -189,6 +188,176 @@ void A32AddressSpace::InvalidateCacheRanges(const boost::icl::interval_set<u32>&
     InvalidateBasicBlocks(block_ranges.InvalidateRanges(ranges));
 }
 
+void A32AddressSpace::GenHaltReasonSet(oaknut::Label& run_code_entry) {
+    oaknut::Label _dummy;
+    GenHaltReasonSetImpl(false, run_code_entry, _dummy);
+}
+void A32AddressSpace::GenHaltReasonSet(oaknut::Label& run_code_entry, oaknut::Label& ret_code_entry) {
+    GenHaltReasonSetImpl(true, run_code_entry, ret_code_entry);
+}
+void A32AddressSpace::GenHaltReasonSetImpl(bool isRet, oaknut::Label& run_code_entry, oaknut::Label& ret_code_entry) {
+    using namespace oaknut::util;
+    oaknut::Label normal_code, halt_reason_set, halt_hr_loop;
+    if (halt_reason_on_run) {
+        if (isRet) {
+            code.SUB(SP, SP, 16);
+            code.STP(X0, X19, SP, 0);
+            code.MOV(X19, X0);
+        }
+        code.SUB(SP, SP, 32);
+        code.STP(X20, X21, SP, 0);
+        code.STP(X22, X23, SP, 16);
+
+        code.LDR(W20, X19, -4);
+        code.LDR(X21, X19, -16);
+
+        code.MOV(X22, trace_scope_begin);
+        code.CMP(X21, X22);
+        code.B(LT, normal_code);
+        code.MOV(X22, trace_scope_end);
+        code.CMP(X21, X22);
+        code.B(GT, normal_code);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0xfc000000);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0x94000000);  // BL
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0xfffffc1f);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0xd63f0000);  // BLR
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0xfffff800);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0xd63f0800);  // BLRxxx
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0xff000010);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0x54000000);  // B.cond
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0xff000010);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0x54000010);  // BC.cond
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0x7f000000);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0x35000000);  // CBNZ
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0x7f000000);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0x34000000);  // CBZ
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0x7f000000);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0x37000000);  // TBNZ
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0x7f000000);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0x36000000);  // TBZ
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0xfc000000);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0x14000000);  // B
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0xfffffc1f);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0xd61f0000);  // BR
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0xfffff800);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0xd61f0800);  // BRxxx
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0xfffffc1f);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0xd65f0000);  // RET
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0xfffffbff);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0xd65f0bff);  // RETAA, RETAB
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0xffc0001f);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0x5500001f);  // RETAASPPC, RETABSPPC
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.MOV(W21, W20);
+        code.MOV(W22, 0xfffffbe0);
+        code.AND(W22, W22, W21);
+        code.MOV(W23, 0xd65f0be0);  // RETAASPPC, RETABSPPC
+        code.CMP(W22, W23);
+        code.B(EQ, halt_reason_set);
+
+        code.l(normal_code);
+        code.LDP(X20, X21, SP, 0);
+        code.LDP(X22, X23, SP, 16);
+        code.ADD(SP, SP, 32);
+        if (isRet) {
+            code.LDP(X0, X19, SP, 0);
+            code.ADD(SP, SP, 16);
+        }
+        code.B(run_code_entry);
+
+        code.l(halt_reason_set);
+        code.LDP(X20, X21, SP, 0);
+        code.LDP(X22, X23, SP, 16);
+        code.ADD(SP, SP, 32);
+
+        code.l(halt_hr_loop);
+        code.LDAXR(Wscratch0, Xhalt);
+        code.ORR(Wscratch0, Wscratch0, halt_reason_on_run);
+        code.STLXR(Wscratch1, Wscratch0, Xhalt);
+        code.CBNZ(Wscratch1, halt_hr_loop);
+
+        if (isRet) {
+            code.LDP(X0, X19, SP, 0);
+            code.ADD(SP, SP, 16);
+            code.B(ret_code_entry);
+        }
+    }
+}
 void A32AddressSpace::EmitPrelude() {
     using namespace oaknut::util;
 
@@ -224,7 +393,7 @@ void A32AddressSpace::EmitPrelude() {
     prelude_info.add_ticks = EmitCallTrampoline<&A32::UserCallbacks::AddTicks>(code, conf.callbacks);
     prelude_info.get_ticks_remaining = EmitCallTrampoline<&A32::UserCallbacks::GetTicksRemaining>(code, conf.callbacks);
 
-    oaknut::Label return_from_run_code, l_return_to_dispatcher;
+    oaknut::Label halt_reason_set, run_code_entry, return_from_run_code, l_return_to_dispatcher;
 
     prelude_info.run_code = code.xptr<PreludeInfo::RunCodeFuncType>();
     {
@@ -262,6 +431,9 @@ void A32AddressSpace::EmitPrelude() {
         code.LDAR(Wscratch0, Xhalt);
         code.CBNZ(Wscratch0, return_from_run_code);
 
+        GenHaltReasonSet(run_code_entry);
+
+        code.l(run_code_entry);
         code.BR(X19);
     }
 
@@ -324,6 +496,11 @@ void A32AddressSpace::EmitPrelude() {
         code.MOV(X1, Xstate);
         code.LDR(Xscratch0, l_addr);
         code.BLR(Xscratch0);
+
+        oaknut::Label next_code_entry;
+        GenHaltReasonSet(next_code_entry, return_from_run_code);
+        code.l(next_code_entry);
+
         code.BR(X0);
 
         const auto fn = [](A32AddressSpace& self, A32JitState& context) -> CodePtr {
