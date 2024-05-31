@@ -65,8 +65,10 @@ CodePtr AddressSpace::GetOrEmit(IR::LocationDescriptor descriptor) {
         return block_entry;
     }
 
-    IR::Block ir_block = GenerateIR(descriptor);
-    const EmittedBlockInfo block_info = Emit(std::move(ir_block));
+    u64 pc;
+    u32 inst;
+    IR::Block ir_block = GenerateIR(descriptor, pc, inst);
+    const EmittedBlockInfo block_info = Emit(std::move(ir_block), pc, inst);
     return block_info.entry_point;
 }
 
@@ -107,14 +109,14 @@ size_t AddressSpace::GetRemainingSize() {
     return code_cache_size - static_cast<size_t>(code.offset());
 }
 
-EmittedBlockInfo AddressSpace::Emit(IR::Block block) {
+EmittedBlockInfo AddressSpace::Emit(IR::Block block, u64 pc, u32 firstInst) {
     if (GetRemainingSize() < 1024 * 1024) {
         ClearCache();
     }
 
     UnprotectCodeMemory();
 
-    EmittedBlockInfo block_info = EmitArm64(code, std::move(block), GetEmitConfig(), fastmem_manager);
+    EmittedBlockInfo block_info = EmitArm64(code, std::move(block), GetEmitConfig(), fastmem_manager, pc, firstInst);
 
     ASSERT(block_entries.insert({block.Location(), block_info.entry_point}).second);
     ASSERT(reverse_block_entries.insert({block_info.entry_point, block.Location()}).second);

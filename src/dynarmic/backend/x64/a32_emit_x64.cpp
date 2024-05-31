@@ -96,7 +96,7 @@ void A32EmitX64::Initialize() {
     code.PreludeComplete();
 }
 
-A32EmitX64::BlockDescriptor A32EmitX64::Emit(IR::Block& block) {
+A32EmitX64::BlockDescriptor A32EmitX64::Emit(IR::Block& block, u32 pc, u32 firstArmInst) {
     if (conf.very_verbose_debugging_output) {
         std::puts(IR::DumpBlock(block).c_str());
     }
@@ -122,6 +122,9 @@ A32EmitX64::BlockDescriptor A32EmitX64::Emit(IR::Block& block) {
 
     // Start emitting.
     code.align();
+    code.dq(pc);
+    code.dd(0);
+    code.dd(firstArmInst);
     const u8* const entrypoint = code.getCurr();
 
     EmitCondPrelude(ctx);
