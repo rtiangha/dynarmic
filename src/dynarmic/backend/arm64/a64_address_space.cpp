@@ -375,8 +375,8 @@ void A64AddressSpace::GenHaltReasonSetImpl(bool isRet, oaknut::Label& run_code_e
         code.STP(X20, X21, SP, 0);
         code.STP(X22, X23, SP, 16);
 
-        code.LDR(W20, X19, -4);
-        code.LDR(X21, X19, -16);
+        code.LDURH(W20, X19, -4);
+        code.LDUR(X21, X19, -16);
 
         code.MOV(X22, trace_scope_begin);
         code.CMP(X21, X22);
@@ -505,7 +505,11 @@ void A64AddressSpace::GenHaltReasonSetImpl(bool isRet, oaknut::Label& run_code_e
             code.LDP(X0, X19, SP, 0);
             code.ADD(SP, SP, 16);
         }
-        code.B(run_code_entry);
+        code.ADRP(Xscratch0, run_code_entry);
+        code.ADR(Xscratch1, run_code_entry);
+        code.AND(Xscratch1, Xscratch1, 0xfff);
+        code.ADD(Xscratch0, Xscratch0, Xscratch1);
+        code.BR(Xscratch0);
 
         code.l(halt_reason_set);
         code.LDP(X20, X21, SP, 0);
@@ -521,7 +525,11 @@ void A64AddressSpace::GenHaltReasonSetImpl(bool isRet, oaknut::Label& run_code_e
         if (isRet) {
             code.LDP(X0, X19, SP, 0);
             code.ADD(SP, SP, 16);
-            code.B(ret_code_entry);
+            code.ADRP(Xscratch0, run_code_entry);
+            code.ADR(Xscratch1, run_code_entry);
+            code.AND(Xscratch1, Xscratch1, 0xfff);
+            code.ADD(Xscratch0, Xscratch0, Xscratch1);
+            code.BR(Xscratch0);
         }
     }
 }
