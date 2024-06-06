@@ -33,7 +33,13 @@ struct Jit::Impl final {
     }
 
     HaltReason Run() {
-        ASSERT(!jit_interface->is_executing);
+        // is_executing is an instance variable. Why can its value be ensured to appear in pairs
+        // at the instance-level function entry and exit between fibers?
+        // ASSERT(!jit_interface->is_executing);
+        if (jit_interface->is_executing) {
+            // Avoid reentrancy
+            return HaltReason::CacheInvalidation;
+        }
         PerformRequestedCacheInvalidation(static_cast<HaltReason>(Atomic::Load(&halt_reason)));
 
         jit_interface->is_executing = true;
@@ -49,7 +55,13 @@ struct Jit::Impl final {
     }
 
     HaltReason Step() {
-        ASSERT(!jit_interface->is_executing);
+        // is_executing is an instance variable. Why can its value be ensured to appear in pairs
+        // at the instance-level function entry and exit between fibers?
+        // ASSERT(!jit_interface->is_executing);
+        if (jit_interface->is_executing) {
+            // Avoid reentrancy
+            return HaltReason::CacheInvalidation;
+        }
         PerformRequestedCacheInvalidation(static_cast<HaltReason>(Atomic::Load(&halt_reason)));
 
         jit_interface->is_executing = true;
