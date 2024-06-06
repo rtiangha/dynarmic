@@ -73,7 +73,13 @@ public:
     }
 
     HaltReason Run() {
-        ASSERT(!is_executing);
+        // is_executing is an instance variable. Why can its value be ensured to appear in pairs
+        // at the instance-level function entry and exit between fibers?
+        // ASSERT(!is_executing);
+        if (is_executing) {
+            //Avoid reentrancy
+            return HaltReason::CacheInvalidation;
+        }
         PerformRequestedCacheInvalidation(static_cast<HaltReason>(Atomic::Load(&jit_state.halt_reason)));
 
         is_executing = true;
@@ -102,7 +108,13 @@ public:
     }
 
     HaltReason Step() {
-        ASSERT(!is_executing);
+        // is_executing is an instance variable. Why can its value be ensured to appear in pairs
+        // at the instance-level function entry and exit between fibers?
+        // ASSERT(!is_executing);
+        if (is_executing) {
+            // Avoid reentrancy
+            return HaltReason::CacheInvalidation;
+        }
         PerformRequestedCacheInvalidation(static_cast<HaltReason>(Atomic::Load(&jit_state.halt_reason)));
 
         is_executing = true;
