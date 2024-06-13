@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
-project(dynarmic LANGUAGES C CXX ASM VERSION 6.6.3)
+
+# Allow for <PACKAGENAME>_ROOT
+if(CMAKE_VERSION VERSION_GREATER "3.26")
+    cmake_policy(SET CMP0144 NEW)
+endif()
+
+project(dynarmic LANGUAGES C CXX ASM VERSION 6.7.0)
 
 # Determine if we're built as a subproject (using add_subdirectory)
 # or if this is the master project.
