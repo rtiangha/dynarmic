@@ -24,6 +24,8 @@ IR::Block Translate(LocationDescriptor descriptor, MemoryReadCodeFuncType memory
         const u64 pc = visitor.ir.current_location->PC();
 
         if (const auto instruction = memory_read_code(pc)) {
+            ASSERT_MSG(instruction.value(), "No instruction on address {:016X}", pc);
+
             if (auto decoder = Decode<TranslatorVisitor>(*instruction)) {
                 should_continue = decoder->get().call(visitor, *instruction);
             } else {
