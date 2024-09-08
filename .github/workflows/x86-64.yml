@@ -9,7 +9,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ windows-latest, ubuntu-latest, macos-latest ]
+        os: [ windows-latest, ubuntu-24.04, macos-13 ]
         cpu_detection: [ 0, 1 ]
       fail-fast: false
 
@@ -18,41 +18,49 @@ jobs:
     steps:
 
       - name: Install build dependencies
-        if: ${{matrix.os == 'ubuntu-latest'}}
-        run: sudo apt-get install llvm ninja-build
+        if: ${{matrix.os == 'ubuntu-24.04'}}
+        run: sudo apt-get install llvm ninja-build gcc-11 g++-11
 
       - name: Install build dependencies
-        if: ${{matrix.os == 'macos-latest'}}
+        if: ${{matrix.os == 'macos-13'}}
         run: |
           brew install llvm ninja
           echo "/usr/local/opt/llvm/bin" >> $GITHUB_PATH
 
+      - name: Setup XCode
+        if: ${{matrix.os == 'macos-13'}}
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
       - name: Checkout dynarmic repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Checkout ext-boost repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
-          repository: yuzu-mirror/ext-boost
+          repository: rtiangha/ext-boost
           path: externals/ext-boost
 
       - name: Checkout unicorn repo
-        if: ${{matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'}}
-        uses: actions/checkout@v2
+        if: ${{matrix.os == 'ubuntu-24.04' || matrix.os == 'macos-13'}}
+        uses: actions/checkout@v4
         with:
           repository: yuzu-mirror/unicorn
           path: externals/unicorn
 
       - name: Build unicorn
-        if: ${{matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'}}
+        if: ${{matrix.os == 'ubuntu-24.04' || matrix.os == 'macos-13'}}
         working-directory: externals/unicorn
         run: UNICORN_ARCHS=aarch64,arm ./make.sh
 
       - name: Configure CMake
-        if: ${{matrix.os == 'ubuntu-latest'}}
+        if: ${{matrix.os == 'ubuntu-24.04'}}
         env:
-          CC: gcc-10
-          CXX: g++-10
+          CC: gcc-11
+          CXX: g++-11
           CXXFLAGS: -Wp,-D_GLIBCXX_ASSERTIONS
         run: >
           cmake
@@ -67,7 +75,7 @@ jobs:
           -G Ninja
 
       - name: Configure CMake
-        if: ${{matrix.os == 'macos-latest'}}
+        if: ${{matrix.os == 'macos-13'}}
         run: >
           cmake
           -B ${{github.workspace}}/build
