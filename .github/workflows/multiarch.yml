@@ -19,13 +19,20 @@ jobs:
           brew install ninja
           echo "/usr/local/opt/llvm/bin" >> $GITHUB_PATH
 
+      - name: Setup XCode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
       - name: Checkout dynarmic repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Checkout ext-boost repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
-          repository: yuzu-mirror/ext-boost
+          repository: rtiangha/ext-boost
           path: externals/ext-boost
 
       - name: Configure CMake
