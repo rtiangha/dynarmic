@@ -10,11 +10,10 @@
 #include "dynarmic/backend/arm64/emit_arm64.h"
 #include "dynarmic/backend/arm64/emit_context.h"
 #include "dynarmic/backend/arm64/reg_alloc.h"
+#include "dynarmic/common/crypto/sm4.h"
 #include "dynarmic/ir/basic_block.h"
 #include "dynarmic/ir/microinstruction.h"
 #include "dynarmic/ir/opcodes.h"
-
-#include "dynarmic/common/crypto/sm4.h"
 
 namespace Dynarmic::Backend::Arm64 {
 
@@ -119,11 +118,11 @@ void EmitIR<IR::Opcode::SM4AccessSubstitutionBox>(oaknut::CodeGenerator& code, E
     (void)code;
     (void)ctx;
     (void)inst;
-    //ASSERT_FALSE("Unimplemented");
-    
+    // ASSERT_FALSE("Unimplemented");
+
     auto args = ctx.reg_alloc.GetArgumentInfo(inst);
     ctx.reg_alloc.PrepareForCall(args[0]);
-    code.MOVP2R(Xscratch0, reinterpret_cast<const void *>(&Common::Crypto::SM4::AccessSubstitutionBox));
+    code.MOVP2R(Xscratch0, reinterpret_cast<const void*>(&Common::Crypto::SM4::AccessSubstitutionBox));
     code.BLR(Xscratch0);
     code.SXTB(X0, W0);
 }

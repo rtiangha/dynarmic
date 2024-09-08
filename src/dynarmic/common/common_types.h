@@ -28,28 +28,28 @@
 #include <cstdint>
 
 #ifdef _MSC_VER
-#ifndef __func__
-#define __func__ __FUNCTION__
+#    ifndef __func__
+#        define __func__ __FUNCTION__
+#    endif
 #endif
-#endif
 
-typedef std::uint8_t u8;   ///< 8-bit unsigned byte
-typedef std::uint16_t u16; ///< 16-bit unsigned short
-typedef std::uint32_t u32; ///< 32-bit unsigned word
-typedef std::uint64_t u64; ///< 64-bit unsigned int
+typedef std::uint8_t u8;    ///< 8-bit unsigned byte
+typedef std::uint16_t u16;  ///< 16-bit unsigned short
+typedef std::uint32_t u32;  ///< 32-bit unsigned word
+typedef std::uint64_t u64;  ///< 64-bit unsigned int
 
-typedef std::int8_t s8;   ///< 8-bit signed byte
-typedef std::int16_t s16; ///< 16-bit signed short
-typedef std::int32_t s32; ///< 32-bit signed word
-typedef std::int64_t s64; ///< 64-bit signed int
+typedef std::int8_t s8;    ///< 8-bit signed byte
+typedef std::int16_t s16;  ///< 16-bit signed short
+typedef std::int32_t s32;  ///< 32-bit signed word
+typedef std::int64_t s64;  ///< 64-bit signed int
 
-typedef float f32;  ///< 32-bit floating point
-typedef double f64; ///< 64-bit floating point
+typedef float f32;   ///< 32-bit floating point
+typedef double f64;  ///< 64-bit floating point
 
 // TODO: It would be nice to eventually replace these with strong types that prevent accidental
 // conversion between each other.
-typedef u32 VAddr; ///< Represents a pointer in the userspace virtual address space.
-typedef u32 PAddr; ///< Represents a pointer in the ARM11 physical address space.
+typedef u32 VAddr;  ///< Represents a pointer in the userspace virtual address space.
+typedef u32 PAddr;  ///< Represents a pointer in the ARM11 physical address space.
 
 using u128 = std::array<std::uint64_t, 2>;
 static_assert(sizeof(u128) == 16, "u128 must be 128 bits wide");
