@@ -25,3 +25,6 @@
 [submodule "externals/zydis"]
 	path = externals/zydis
 	url = https://github.com/zyantific/zydis
+[submodule "externals/ext-boost"]
+	path = externals/ext-boost
+	url = https://github.com/rtiangha/ext-boost

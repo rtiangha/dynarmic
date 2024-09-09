@@ -29,12 +29,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Checkout ext-boost repo
-        uses: actions/checkout@v4
-        with:
-          repository: rtiangha/ext-boost
-          path: externals/ext-boost
-
       - name: Configure CMake
         run: >
           cmake

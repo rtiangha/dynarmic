@@ -34,12 +34,6 @@ jobs:
         if: matrix.platform == 'linux'
         uses: hendrikmuhs/ccache-action@v1.2
 
-      - name: Checkout ext-boost repo
-        uses: actions/checkout@v4
-        with:
-          repository: rtiangha/ext-boost
-          path: externals/ext-boost
-
       - name: Configure CMake for RISCV64 (Linux)
         if: matrix.platform == 'linux'
         env:

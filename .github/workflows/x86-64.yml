@@ -38,12 +38,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Checkout ext-boost repo
-        uses: actions/checkout@v4
-        with:
-          repository: rtiangha/ext-boost
-          path: externals/ext-boost
-
       - name: Checkout unicorn repo
         if: ${{matrix.os == 'ubuntu-24.04' || matrix.os == 'macos-13'}}
         uses: actions/checkout@v4
