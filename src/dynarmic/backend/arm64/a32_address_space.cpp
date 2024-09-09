@@ -162,7 +162,7 @@ A32AddressSpace::A32AddressSpace(const A32::UserConfig& conf)
 
 IR::Block A32AddressSpace::GenerateIR(IR::LocationDescriptor descriptor, u64& pc, u32& inst) const {
     const auto get_code = [this](u64 vaddr) { return conf.callbacks->MemoryReadCode(vaddr); };
-    u32 pc32 = A32::LocationDescriptor{ descriptor }.PC();
+    u32 pc32 = A32::LocationDescriptor{descriptor}.PC();
     pc = pc32;
     inst = get_code(pc32).value();
     IR::Block ir_block = A32::Translate(A32::LocationDescriptor{descriptor}, conf.callbacks, {conf.arch_version, conf.define_unpredictable_behaviour, conf.hook_hint_instructions});

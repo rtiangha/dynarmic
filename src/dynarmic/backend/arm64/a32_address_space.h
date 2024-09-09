@@ -27,6 +27,7 @@ public:
         trace_scope_end = _trace_scope_end;
         EmitPrelude();
     }
+
 protected:
     friend class A32Core;
 

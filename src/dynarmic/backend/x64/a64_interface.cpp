@@ -77,7 +77,7 @@ public:
         // at the instance-level function entry and exit between fibers?
         // ASSERT(!is_executing);
         if (is_executing) {
-            //Avoid reentrancy
+            // Avoid reentrancy
             return HaltReason::CacheInvalidation;
         }
         PerformRequestedCacheInvalidation(static_cast<HaltReason>(Atomic::Load(&jit_state.halt_reason)));
@@ -287,7 +287,7 @@ private:
 
         // JIT Compile
         const auto get_code = [this](u64 vaddr) { return conf.callbacks->MemoryReadCode(vaddr); };
-        u64 pc = A64::LocationDescriptor{ current_location }.PC();
+        u64 pc = A64::LocationDescriptor{current_location}.PC();
         u32 inst = get_code(pc).value();
         IR::Block ir_block = A64::Translate(A64::LocationDescriptor{current_location}, get_code,
                                             {conf.define_unpredictable_behaviour, conf.wall_clock_cntpct});

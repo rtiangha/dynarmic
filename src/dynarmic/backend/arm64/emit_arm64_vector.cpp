@@ -867,9 +867,9 @@ void EmitIR<IR::Opcode::VectorMaxS64>(oaknut::CodeGenerator& code, EmitContext& 
     (void)code;
     (void)ctx;
     (void)inst;
-    //ASSERT_FALSE("Unimplemented");
-    
-    EmitThreeOp(code, ctx, inst, [&](auto& Qresult, auto& Qa, auto& Qb){
+    // ASSERT_FALSE("Unimplemented");
+
+    EmitThreeOp(code, ctx, inst, [&](auto& Qresult, auto& Qa, auto& Qb) {
         code.CMGE(Qresult->D2(), Qa->D2(), Qb->D2());
         code.AND(Qa->B16(), Qresult->B16(), Qa->B16());
         code.MVN(Qresult->B16(), Qresult->B16());
@@ -898,9 +898,9 @@ void EmitIR<IR::Opcode::VectorMaxU64>(oaknut::CodeGenerator& code, EmitContext& 
     (void)code;
     (void)ctx;
     (void)inst;
-    //ASSERT_FALSE("Unimplemented");
-    
-    EmitThreeOp(code, ctx, inst, [&](auto& Qresult, auto& Qa, auto& Qb){
+    // ASSERT_FALSE("Unimplemented");
+
+    EmitThreeOp(code, ctx, inst, [&](auto& Qresult, auto& Qa, auto& Qb) {
         code.CMHS(Qresult->D2(), Qa->D2(), Qb->D2());
         code.AND(Qa->B16(), Qresult->B16(), Qa->B16());
         code.MVN(Qresult->B16(), Qresult->B16());
@@ -929,9 +929,9 @@ void EmitIR<IR::Opcode::VectorMinS64>(oaknut::CodeGenerator& code, EmitContext& 
     (void)code;
     (void)ctx;
     (void)inst;
-    //ASSERT_FALSE("Unimplemented");
-    
-    EmitThreeOp(code, ctx, inst, [&](auto& Qresult, auto& Qa, auto& Qb){
+    // ASSERT_FALSE("Unimplemented");
+
+    EmitThreeOp(code, ctx, inst, [&](auto& Qresult, auto& Qa, auto& Qb) {
         code.CMGT(Qresult->D2(), Qa->D2(), Qb->D2());
         code.AND(Qb->B16(), Qresult->B16(), Qb->B16());
         code.MVN(Qresult->B16(), Qresult->B16());
@@ -960,9 +960,9 @@ void EmitIR<IR::Opcode::VectorMinU64>(oaknut::CodeGenerator& code, EmitContext& 
     (void)code;
     (void)ctx;
     (void)inst;
-    //ASSERT_FALSE("Unimplemented");
-    
-    EmitThreeOp(code, ctx, inst, [&](auto& Qresult, auto& Qa, auto& Qb){
+    // ASSERT_FALSE("Unimplemented");
+
+    EmitThreeOp(code, ctx, inst, [&](auto& Qresult, auto& Qa, auto& Qb) {
         code.CMHI(Qresult->D2(), Qa->D2(), Qb->D2());
         code.AND(Qb->B16(), Qresult->B16(), Qb->B16());
         code.MVN(Qresult->B16(), Qresult->B16());
