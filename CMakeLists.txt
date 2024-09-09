@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
+
+# FindBoost module no longer provided in cmake 3.30 and above
+if(CMAKE_VERSION VERSION_GREATER "3.29")
+    set(CMAKE_POLICY_DEFAULT_CMP0167 OLD)
+endif()
+
 project(dynarmic LANGUAGES C CXX ASM VERSION 6.7.0)
 
 # Determine if we're built as a subproject (using add_subdirectory)
