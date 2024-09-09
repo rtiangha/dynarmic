@@ -38,13 +38,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Checkout unicorn repo
-        if: ${{matrix.os == 'ubuntu-24.04' || matrix.os == 'macos-13'}}
-        uses: actions/checkout@v4
-        with:
-          repository: yuzu-mirror/unicorn
-          path: externals/unicorn
-
       - name: Build unicorn
         if: ${{matrix.os == 'ubuntu-24.04' || matrix.os == 'macos-13'}}
         working-directory: externals/unicorn

@@ -28,3 +28,6 @@
 [submodule "externals/ext-boost"]
 	path = externals/ext-boost
 	url = https://github.com/rtiangha/ext-boost
+[submodule "externals/unicorn"]
+	path = externals/unicorn
+	url = https://github.com/rtiangha/unicorn
