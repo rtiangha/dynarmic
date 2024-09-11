@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "dynarmic/common/common_types.h"
 #include "dynarmic/interface/A32/config.h"
 #include "dynarmic/interface/halt_reason.h"
 
