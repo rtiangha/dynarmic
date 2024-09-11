@@ -85,7 +85,7 @@ struct Jit::Impl {
         PerformRequestedCacheInvalidation(static_cast<HaltReason>(Atomic::Load(&jit_state.halt_reason)));
 
         jit_interface->is_executing = true;
-        SCOPE_EXIT{
+        SCOPE_EXIT {
             jit_interface->is_executing = false;
         };
 

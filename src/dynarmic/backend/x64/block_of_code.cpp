@@ -305,7 +305,6 @@ void BlockOfCode::ForceReturnFromRunCode(bool mxcsr_already_exited) {
     jmp(return_from_run_code[index]);
 }
 
-
 void BlockOfCode::GenHaltReasonSet(Xbyak::Label& run_code_entry) {
     Xbyak::Label _dummy;
     GenHaltReasonSetImpl(false, run_code_entry, _dummy);
@@ -338,82 +337,82 @@ void BlockOfCode::GenHaltReasonSetImpl(bool isRet, Xbyak::Label& run_code_entry,
 
         mov(edi, esi);
         and_(edi, 0xfc000000);
-        cmp(edi, 0x94000000);//BL
+        cmp(edi, 0x94000000);  // BL
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0xfffffc1f);
-        cmp(edi, 0xd63f0000);//BLR
+        cmp(edi, 0xd63f0000);  // BLR
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0xfffff800);
-        cmp(edi, 0xd63f0800);//BLRxxx
+        cmp(edi, 0xd63f0800);  // BLRxxx
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0xff000010);
-        cmp(edi, 0x54000000);//B.cond
+        cmp(edi, 0x54000000);  // B.cond
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0xff000010);
-        cmp(edi, 0x54000010);//BC.cond
+        cmp(edi, 0x54000010);  // BC.cond
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0x7f000000);
-        cmp(edi, 0x35000000);//CBNZ
+        cmp(edi, 0x35000000);  // CBNZ
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0x7f000000);
-        cmp(edi, 0x34000000);//CBZ
+        cmp(edi, 0x34000000);  // CBZ
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0x7f000000);
-        cmp(edi, 0x37000000);//TBNZ
+        cmp(edi, 0x37000000);  // TBNZ
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0x7f000000);
-        cmp(edi, 0x36000000);//TBZ
+        cmp(edi, 0x36000000);  // TBZ
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0xfc000000);
-        cmp(edi, 0x14000000);//B
+        cmp(edi, 0x14000000);  // B
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0xfffffc1f);
-        cmp(edi, 0xd61f0000);//BR
+        cmp(edi, 0xd61f0000);  // BR
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0xfffff800);
-        cmp(edi, 0xd61f0800);//BRxxx
+        cmp(edi, 0xd61f0800);  // BRxxx
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0xfffffc1f);
-        cmp(edi, 0xd65f0000);//RET
+        cmp(edi, 0xd65f0000);  // RET
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0xfffffbff);
-        cmp(edi, 0xd65f0bff);//RETAA, RETAB
+        cmp(edi, 0xd65f0bff);  // RETAA, RETAB
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0xffc0001f);
-        cmp(edi, 0x5500001f);//RETAASPPC, RETABSPPC
+        cmp(edi, 0x5500001f);  // RETAASPPC, RETABSPPC
         jz(halt_reason_set, T_NEAR);
 
         mov(edi, esi);
         and_(edi, 0xfffffbe0);
-        cmp(edi, 0xd65f0be0);//RETAASPPC, RETABSPPC
+        cmp(edi, 0xd65f0be0);  // RETAASPPC, RETABSPPC
         jz(halt_reason_set, T_NEAR);
 
         L(normal_code);

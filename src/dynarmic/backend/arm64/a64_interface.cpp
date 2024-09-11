@@ -28,7 +28,7 @@ struct Jit::Impl final {
             , current_address_space(conf)
             , core(conf) {}
 
-    void Initialize([[maybe_unused]]u32 halt_reason_on_run, [[maybe_unused]]u64 traceScopeBegin, [[maybe_unused]]u64 traceScopeEnd) {
+    void Initialize([[maybe_unused]] u32 halt_reason_on_run, [[maybe_unused]] u64 traceScopeBegin, [[maybe_unused]] u64 traceScopeEnd) {
         current_address_space.Initialize(halt_reason_on_run, traceScopeBegin, traceScopeEnd);
     }
 
@@ -37,7 +37,7 @@ struct Jit::Impl final {
         // at the instance-level function entry and exit between fibers?
         // ASSERT(!is_executing);
         if (is_executing) {
-            //Avoid reentrancy
+            // Avoid reentrancy
             return HaltReason::CacheInvalidation;
         }
         PerformRequestedCacheInvalidation(static_cast<HaltReason>(Atomic::Load(&halt_reason)));
@@ -59,7 +59,7 @@ struct Jit::Impl final {
         // at the instance-level function entry and exit between fibers?
         // ASSERT(!is_executing);
         if (is_executing) {
-            //Avoid reentrancy
+            // Avoid reentrancy
             return HaltReason::CacheInvalidation;
         }
         PerformRequestedCacheInvalidation(static_cast<HaltReason>(Atomic::Load(&halt_reason)));
@@ -215,7 +215,7 @@ Jit::Jit(UserConfig conf)
 
 Jit::~Jit() = default;
 
-void Jit::Initialize([[maybe_unused]]u32 halt_reason_on_run, [[maybe_unused]]u64 traceScopeBegin, [[maybe_unused]]u64 traceScopeEnd) {
+void Jit::Initialize([[maybe_unused]] u32 halt_reason_on_run, [[maybe_unused]] u64 traceScopeBegin, [[maybe_unused]] u64 traceScopeEnd) {
     impl->Initialize(halt_reason_on_run, traceScopeBegin, traceScopeEnd);
 }
 

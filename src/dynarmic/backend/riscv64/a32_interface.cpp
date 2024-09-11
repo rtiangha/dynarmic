@@ -146,7 +146,7 @@ Jit::Jit(UserConfig conf)
 
 Jit::~Jit() = default;
 
-void Jit::Initialize([[maybe_unused]]u32 halt_reason_on_run, [[maybe_unused]]u64 traceScopeBegin, [[maybe_unused]]u64 traceScopeEnd) {
+void Jit::Initialize([[maybe_unused]] u32 halt_reason_on_run, [[maybe_unused]] u64 traceScopeBegin, [[maybe_unused]] u64 traceScopeEnd) {
 }
 
 HaltReason Jit::Run() {
