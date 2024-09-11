@@ -853,7 +853,7 @@ static void CallCoprocCallback(BlockOfCode& code, RegAlloc& reg_alloc, A32::Copr
 }
 
 void A32EmitX64::EmitA32CoprocInternalOperation(A32EmitContext& ctx, IR::Inst* inst) {
-    auto [[maybe_unused]] args = ctx.reg_alloc.GetArgumentInfo(inst);
+//    auto args = ctx.reg_alloc.GetArgumentInfo(inst);
     const auto coproc_info = inst->GetArg(0).GetCoprocInfo();
     const size_t coproc_num = coproc_info[0];
     const bool two = coproc_info[1] != 0;
@@ -960,7 +960,7 @@ void A32EmitX64::EmitA32CoprocSendTwoWords(A32EmitContext& ctx, IR::Inst* inst) 
 }
 
 void A32EmitX64::EmitA32CoprocGetOneWord(A32EmitContext& ctx, IR::Inst* inst) {
-    auto args = ctx.reg_alloc.GetArgumentInfo(inst);
+//    auto args = ctx.reg_alloc.GetArgumentInfo(inst);
     const auto coproc_info = inst->GetArg(0).GetCoprocInfo();
     const size_t coproc_num = coproc_info[0];
     const bool two = coproc_info[1] != 0;
@@ -1002,7 +1002,7 @@ void A32EmitX64::EmitA32CoprocGetOneWord(A32EmitContext& ctx, IR::Inst* inst) {
 }
 
 void A32EmitX64::EmitA32CoprocGetTwoWords(A32EmitContext& ctx, IR::Inst* inst) {
-    auto args = ctx.reg_alloc.GetArgumentInfo(inst);
+//    auto args = ctx.reg_alloc.GetArgumentInfo(inst);
     const auto coproc_info = inst->GetArg(0).GetCoprocInfo();
     const size_t coproc_num = coproc_info[0];
     const bool two = coproc_info[1] != 0;
