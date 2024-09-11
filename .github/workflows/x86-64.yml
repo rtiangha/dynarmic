@@ -19,7 +19,7 @@ jobs:
 
       - name: Install build dependencies
         if: ${{matrix.os == 'ubuntu-24.04'}}
-        run: sudo apt-get install llvm ninja-build gcc-11 g++-11
+        run: sudo apt-get install llvm ninja-build gcc-13 g++-13
 
       - name: Install build dependencies
         if: ${{matrix.os == 'macos-13'}}
@@ -46,12 +46,13 @@ jobs:
       - name: Configure CMake
         if: ${{matrix.os == 'ubuntu-24.04'}}
         env:
-          CC: gcc-11
-          CXX: g++-11
+          CC: gcc-13
+          CXX: g++-13
           CXXFLAGS: -Wp,-D_GLIBCXX_ASSERTIONS
         run: >
           cmake
           -B ${{github.workspace}}/build
+          -DCMAKE_CXX_FLAGS="-std=c++20"
           -DBOOST_INCLUDEDIR=${{github.workspace}}/externals/ext-boost
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DDYNARMIC_ENABLE_CPU_FEATURE_DETECTION=${{matrix.cpu_detection}}
@@ -66,6 +67,7 @@ jobs:
         run: >
           cmake
           -B ${{github.workspace}}/build
+          -DCMAKE_CXX_FLAGS="-std=c++20"
           -DBOOST_INCLUDEDIR=${{github.workspace}}/externals/ext-boost
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DDYNARMIC_ENABLE_CPU_FEATURE_DETECTION=${{matrix.cpu_detection}}
@@ -80,6 +82,7 @@ jobs:
         run: >
           cmake
           -B ${{github.workspace}}/build
+          -DCMAKE_CXX_FLAGS="/std:c++20"
           -DBOOST_INCLUDEDIR=${{github.workspace}}/externals/ext-boost
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DDYNARMIC_ENABLE_CPU_FEATURE_DETECTION=${{matrix.cpu_detection}}
