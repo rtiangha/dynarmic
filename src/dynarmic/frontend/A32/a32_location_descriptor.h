@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include <functional>
 #include <format>
+#include <functional>
 
 #include <mcl/stdint.hpp>
 
@@ -55,11 +55,11 @@ public:
     bool SingleStepping() const { return single_stepping; }
 
     bool operator==(const LocationDescriptor& o) const {
-    return arm_pc == o.arm_pc
-        && cpsr == o.cpsr
-        && fpscr == o.fpscr
-        && single_stepping == o.single_stepping;
-}
+        return arm_pc == o.arm_pc
+            && cpsr == o.cpsr
+            && fpscr == o.fpscr
+            && single_stepping == o.single_stepping;
+    }
 
     bool operator!=(const LocationDescriptor& o) const {
         return !operator==(o);
@@ -153,11 +153,11 @@ struct hash<Dynarmic::A32::LocationDescriptor> {
     }
 };
 
-template <>
-    struct formatter<Dynarmic::A32::LocationDescriptor> : formatter<std::string> {
-        template <typename FormatContext>
-        auto format(const Dynarmic::A32::LocationDescriptor& descriptor, FormatContext& ctx) {
-            return formatter<std::string>::format(Dynarmic::A32::ToString(descriptor), ctx);
-        }
+template<>
+struct formatter<Dynarmic::A32::LocationDescriptor> : formatter<std::string> {
+    template<typename FormatContext>
+    auto format(const Dynarmic::A32::LocationDescriptor& descriptor, FormatContext& ctx) {
+        return formatter<std::string>::format(Dynarmic::A32::ToString(descriptor), ctx);
+    }
 };
 }  // namespace std
