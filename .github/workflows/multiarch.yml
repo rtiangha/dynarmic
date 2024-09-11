@@ -34,7 +34,7 @@ jobs:
           cmake
           -B ${{github.workspace}}/build
           -DBOOST_INCLUDEDIR=${{github.workspace}}/externals/ext-boost
-          -DCMAKE_CXX_FLAGS="-std=c++20"
+          -DCMAKE_CXX_STANDARD="20"
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
           -G Ninja

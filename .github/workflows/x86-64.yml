@@ -52,7 +52,7 @@ jobs:
         run: >
           cmake
           -B ${{github.workspace}}/build
-          -DCMAKE_CXX_FLAGS="-std=c++20"
+          -DCMAKE_CXX_STANDARD="20"
           -DBOOST_INCLUDEDIR=${{github.workspace}}/externals/ext-boost
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DDYNARMIC_ENABLE_CPU_FEATURE_DETECTION=${{matrix.cpu_detection}}
@@ -67,7 +67,7 @@ jobs:
         run: >
           cmake
           -B ${{github.workspace}}/build
-          -DCMAKE_CXX_FLAGS="-std=c++20"
+          -DCMAKE_CXX_STANDARD="20"
           -DBOOST_INCLUDEDIR=${{github.workspace}}/externals/ext-boost
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DDYNARMIC_ENABLE_CPU_FEATURE_DETECTION=${{matrix.cpu_detection}}
@@ -82,7 +82,7 @@ jobs:
         run: >
           cmake
           -B ${{github.workspace}}/build
-          -DCMAKE_CXX_FLAGS="/std:c++20"
+          -DCMAKE_CXX_STANDARD="20"
           -DBOOST_INCLUDEDIR=${{github.workspace}}/externals/ext-boost
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DDYNARMIC_ENABLE_CPU_FEATURE_DETECTION=${{matrix.cpu_detection}}
