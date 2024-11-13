@@ -137,7 +137,7 @@ struct UserConfig {
     /// This is intended to be used for debugging.
     OptimizationFlag optimizations = all_safe_optimizations;
 
-    bool HasOptimization(OptimizationFlag f) const {
+    [[nodiscard]] bool HasOptimization(OptimizationFlag f) const {
         if (!unsafe_optimizations) {
             f &= all_safe_optimizations;
         }

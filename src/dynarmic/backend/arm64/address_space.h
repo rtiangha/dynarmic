@@ -27,7 +27,7 @@ public:
     explicit AddressSpace(size_t code_cache_size);
     virtual ~AddressSpace();
 
-    virtual IR::Block GenerateIR(IR::LocationDescriptor) const = 0;
+    [[nodiscard]] virtual IR::Block GenerateIR(IR::LocationDescriptor) const = 0;
 
     CodePtr Get(IR::LocationDescriptor descriptor);
 

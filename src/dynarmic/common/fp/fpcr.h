@@ -34,7 +34,7 @@ public:
     }
 
     /// Get alternate half-precision control flag.
-    bool AHP() const {
+    [[nodiscard]] bool AHP() const {
         return mcl::bit::get_bit<26>(value);
     }
 
@@ -44,7 +44,7 @@ public:
     }
 
     /// Get default NaN mode control bit.
-    bool DN() const {
+    [[nodiscard]] bool DN() const {
         return mcl::bit::get_bit<25>(value);
     }
 
@@ -54,7 +54,7 @@ public:
     }
 
     /// Get flush-to-zero mode control bit.
-    bool FZ() const {
+    [[nodiscard]] bool FZ() const {
         return mcl::bit::get_bit<24>(value);
     }
 
@@ -64,7 +64,7 @@ public:
     }
 
     /// Get rounding mode control field.
-    FP::RoundingMode RMode() const {
+    [[nodiscard]] FP::RoundingMode RMode() const {
         return static_cast<FP::RoundingMode>(mcl::bit::get_bits<22, 23>(value));
     }
 
@@ -76,7 +76,7 @@ public:
 
     /// Get the stride of a vector when executing AArch32 VFP instructions.
     /// This field has no function in AArch64 state.
-    std::optional<size_t> Stride() const {
+    [[nodiscard]] std::optional<size_t> Stride() const {
         switch (mcl::bit::get_bits<20, 21>(value)) {
         case 0b00:
             return 1;
@@ -95,7 +95,7 @@ public:
     }
 
     /// Get flush-to-zero (half-precision specific) mode control bit.
-    bool FZ16() const {
+    [[nodiscard]] bool FZ16() const {
         return mcl::bit::get_bit<19>(value);
     }
 
@@ -106,7 +106,7 @@ public:
 
     /// Gets the length of a vector when executing AArch32 VFP instructions.
     /// This field has no function in AArch64 state.
-    size_t Len() const {
+    [[nodiscard]] size_t Len() const {
         return mcl::bit::get_bits<16, 18>(value) + 1;
     }
 
@@ -118,7 +118,7 @@ public:
     }
 
     /// Get input denormal exception trap enable flag.
-    bool IDE() const {
+    [[nodiscard]] bool IDE() const {
         return mcl::bit::get_bit<15>(value);
     }
 
@@ -128,7 +128,7 @@ public:
     }
 
     /// Get inexact exception trap enable flag.
-    bool IXE() const {
+    [[nodiscard]] bool IXE() const {
         return mcl::bit::get_bit<12>(value);
     }
 
@@ -138,7 +138,7 @@ public:
     }
 
     /// Get underflow exception trap enable flag.
-    bool UFE() const {
+    [[nodiscard]] bool UFE() const {
         return mcl::bit::get_bit<11>(value);
     }
 
@@ -148,7 +148,7 @@ public:
     }
 
     /// Get overflow exception trap enable flag.
-    bool OFE() const {
+    [[nodiscard]] bool OFE() const {
         return mcl::bit::get_bit<10>(value);
     }
 
@@ -158,7 +158,7 @@ public:
     }
 
     /// Get division by zero exception trap enable flag.
-    bool DZE() const {
+    [[nodiscard]] bool DZE() const {
         return mcl::bit::get_bit<9>(value);
     }
 
@@ -168,7 +168,7 @@ public:
     }
 
     /// Get invalid operation exception trap enable flag.
-    bool IOE() const {
+    [[nodiscard]] bool IOE() const {
         return mcl::bit::get_bit<8>(value);
     }
 
@@ -178,12 +178,12 @@ public:
     }
 
     /// Gets the underlying raw value within the FPCR.
-    u32 Value() const {
+    [[nodiscard]] u32 Value() const {
         return value;
     }
 
     /// Gets the StandardFPSCRValue (A32 ASIMD).
-    FPCR ASIMDStandardValue() const {
+    [[nodiscard]] FPCR ASIMDStandardValue() const {
         FPCR stdvalue;
         stdvalue.AHP(AHP());
         stdvalue.FZ16(FZ16());

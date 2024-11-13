@@ -26,7 +26,7 @@ public:
     ///                        unique id.
     explicit ExclusiveMonitor(size_t processor_count);
 
-    size_t GetProcessorCount() const;
+    [[nodiscard]] size_t GetProcessorCount() const;
 
     /// Marks a region containing [address, address+size) to be exclusive to
     /// processor processor_id.
