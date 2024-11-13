@@ -69,14 +69,14 @@ public:
     }
 
     /// Set rounding mode control field.
-    void RMode(FP::RoundingMode rounding_mode) {
+    static void RMode(FP::RoundingMode rounding_mode) {
         ASSERT_MSG(static_cast<u32>(rounding_mode) <= 0b11, "FPCR: Invalid rounding mode");
         value = mcl::bit::set_bits<22, 23>(value, static_cast<u32>(rounding_mode));
     }
 
     /// Get the stride of a vector when executing AArch32 VFP instructions.
     /// This field has no function in AArch64 state.
-    [[nodiscard]] std::optional<size_t> Stride() const {
+    [[nodiscard]] static std::optional<size_t> Stride() const {
         switch (mcl::bit::get_bits<20, 21>(value)) {
         case 0b00:
             return 1;
@@ -89,7 +89,7 @@ public:
 
     /// Set the stride of a vector when executing AArch32 VFP instructions.
     /// This field has no function in AArch64 state.
-    void Stride(size_t stride) {
+    static void Stride(size_t stride) {
         ASSERT_MSG(stride >= 1 && stride <= 2, "FPCR: Invalid stride");
         value = mcl::bit::set_bits<20, 21>(value, stride == 1 ? 0b00u : 0b11u);
     }
@@ -112,7 +112,7 @@ public:
 
     /// Sets the length of a vector when executing AArch32 VFP instructions.
     /// This field has no function in AArch64 state.
-    void Len(size_t len) {
+    static void Len(size_t len) {
         ASSERT_MSG(len >= 1 && len <= 8, "FPCR: Invalid len");
         value = mcl::bit::set_bits<16, 18>(value, static_cast<u32>(len - 1));
     }
